@@ -1,30 +1,37 @@
-// Replace checkForName with a function that checks the URL
-import { checkForName } from './nameChecker'
+export const handleSubmit = async (event) => {
+  event.preventDefault();
 
-// If working on Udacity workspace, update this with the Server API URL e.g. `https://wfkdhyvtzx.prod.udacity-student-workspaces.com/api`
-// const serverURL = 'https://wfkdhyvtzx.prod.udacity-student-workspaces.com/api'
-const serverURL = 'https://localhost:8000/api'
+  const url = document.getElementById("article-url").value;
 
-const form = document.getElementById('urlForm');
-form.addEventListener('submit', handleSubmit);
+  if (!url) {
+    alert("Please enter a URL");
+    return;
+  }
 
-function handleSubmit(event) {
-    event.preventDefault();
+  const response = await fetch("/analyze", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ url }),
+  });
 
-    // Get the URL from the input field
-    const formText = document.getElementById('name').value;
+  try {
+    if (!response.ok) {
+      // Log the error response
+      console.error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text(); // Read the response as text
+      console.error("Error response body:", errorText);
+      return;
+    }
 
-    // This is an example code that checks the submitted name. You may remove it from your code
-    checkForName(formText);
-    
-    // Check if the URL is valid
- 
-        // If the URL is valid, send it to the server using the serverURL constant above
-      
-}
-
-// Function to send data to the server
-
-// Export the handleSubmit function
-export { handleSubmit };
-
+    const data = await response.json();
+    document.getElementById("results").innerHTML = `
+      <p>Polarity: ${data.polarity}</p>
+      <p>Subjectivity: ${data.subjectivity}</p>
+      <p>Text: ${data.text}</p>
+    `;
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+  }
+};

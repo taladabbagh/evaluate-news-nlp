@@ -1,33 +1,46 @@
-var path = require('path');
-const express = require('express');
-const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
+const express = require("express");
+const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
-
-const cors = require('cors');
-
-app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static("dist"));
 
-console.log(__dirname);
+// Use dynamic import for node-fetch
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-// Variables for url and api key
+// Define the /analyze route
+app.post("/analyze", async (req, res) => {
+  const { url } = req.body;
 
+  const apiUrl = `https://api.meaningcloud.com/sentiment-2.1?key=${
+    process.env.MC_API_KEY
+  }&url=${encodeURIComponent(url)}&lang=en`;
 
-app.get('/', function (req, res) {
-    res.send("This is the server API page, you may access its services via the client app.");
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    if (!response.ok) {
+      // If the response is not OK (e.g., 404 or 500), throw an error
+      throw new Error(`API response error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching from API:", error);
+    res.status(500).json({ error: "Error analyzing the article" });
+  }
 });
 
-
-// POST Route
-
-
-
-// Designates what port the app will listen to for incoming requests
-app.listen(8000, function () {
-    console.log('Example app listening on port 8000!');
+// Start the server
+app.listen(8080, () => {
+  console.log("Server is running on http://localhost:8080");
 });
-
-
