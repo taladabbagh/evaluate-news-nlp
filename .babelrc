@@ -1,0 +1,12 @@
+{
+    "presets": ["@babel/preset-env"],
+    "plugins": [
+      "@babel/plugin-transform-async-generator-functions",
+      "@babel/plugin-transform-dynamic-import",
+      "@babel/plugin-transform-json-strings",
+      "@babel/plugin-transform-object-rest-spread",
+      "@babel/plugin-transform-optional-catch-binding",
+      "@babel/plugin-transform-unicode-property-regex"
+    ]
+  }
+  
